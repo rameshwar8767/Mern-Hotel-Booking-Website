@@ -3,6 +3,7 @@ import { Routes, useLocation,Route } from 'react-router-dom'
 import HomePage from './pages/HomePage';
 import Footer from './components/Footer';
 import AllRooms from './pages/AllRooms';
+import RoomDetails from './pages/RoomDetails';
 
 const App = () => {
   const location = useLocation();
@@ -15,6 +16,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<HomePage/>} />
           <Route path="/rooms" element={<AllRooms/>} />
+          <Route path="/rooms/:id" element={<RoomDetails/>} />
         </Routes>
 
       </div>
