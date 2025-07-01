@@ -6,6 +6,9 @@ import { clerkMiddleware } from '@clerk/express'
 import clerkWebhooks from "./controllers/clerkWebhooks.js";
 import userRouter from "./routes/user.route.js";
 import hotelRouter from "./routes/hotel.route.js";
+import connectCloudinary from "./configs/cloudinary.js";
+import roomRouter from "./routes/room.route.js";
+import bookingRouter from "./routes/booking.route.js";
 
 
 
@@ -14,7 +17,7 @@ import hotelRouter from "./routes/hotel.route.js";
 connectDB()
 .then(() => console.log("Database connected successfully"))
 .catch((error) => console.error("Database connection failed:", error));
-
+connectCloudinary()
 const app = express();
 app.use(cors())
 
@@ -31,6 +34,8 @@ app.get('/', (req,res)=>{
 })
 app.use('/api/user',userRouter)
 app.use('/api/hotels',hotelRouter)
+app.use('/api/rooms',roomRouter)
+app.use('/api/bookings',bookingRouter)
 
 const Port = process.env.PORT || 5000;
 app.listen(Port, () => {
