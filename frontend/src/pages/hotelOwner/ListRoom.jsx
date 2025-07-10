@@ -1,9 +1,62 @@
-import React, { useState } from 'react';
-import { roomsDummyData } from '../../assets/assets';
+import React, { useEffect, useState } from 'react';
 import Title from '../../components/Title';
+import { useAppContext } from '../../context/AppContext';
+import toast from 'react-hot-toast';
 
 const ListRoom = () => {
-  const [rooms, setRooms] = useState(roomsDummyData);
+  const [rooms, setRooms] = useState([]);
+  const { axios, getToken } = useAppContext();
+
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
+  const fetchRooms = async () => {
+    try {
+      const { data } = await axios.get('/api/rooms/owner', {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+        },
+      });
+
+      if (data.success) {
+        setRooms(data.rooms);
+      } else {
+        toast.error(data.message || 'Failed to load rooms');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error fetching rooms');
+    }
+  };
+
+  const toggleAvailability = async (roomId) => {
+    try {
+      const { data } = await axios.patch(
+        '/api/rooms/toggle',
+        { roomId },
+        {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`,
+          },
+        }
+      );
+
+      if (data.success) {
+        toast.success(data.message || 'Availability updated');
+        setRooms((prev) =>
+          prev.map((room) =>
+            room._id === roomId
+              ? { ...room, isAvailable: !room.isAvailable }
+              : room
+          )
+        );
+      } else {
+        toast.error(data.message || 'Failed to update availability');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Server error');
+    }
+  };
 
   return (
     <div className="px-4 py-10">
@@ -19,34 +72,34 @@ const ListRoom = () => {
         <table className="w-full text-left">
           <thead className="bg-gray-100 sticky top-0 z-10">
             <tr>
-              <th className="py-3 px-5 text-gray-800 font-semibold">Name</th>
-              <th className="py-3 px-5 text-gray-800 font-semibold max-sm:hidden">Facility</th>
+              <th className="py-3 px-5 text-gray-800 font-semibold">Room Type</th>
+              <th className="py-3 px-5 text-gray-800 font-semibold max-sm:hidden">Amenities</th>
               <th className="py-3 px-5 text-gray-800 font-semibold">Price / Day</th>
-              <th className="py-3 px-5 text-gray-800 font-semibold text-center">Actions</th>
+              <th className="py-3 px-5 text-gray-800 font-semibold text-center">Available</th>
             </tr>
           </thead>
 
           <tbody className="text-sm transition-all">
-            {rooms.map((item, index) => (
+            {rooms.map((room) => (
               <tr
-                key={index}
+                key={room._id}
                 className="hover:bg-gray-50 transition-colors duration-200 border-t border-gray-200"
               >
-                <td className="py-3 px-5 text-gray-700">{item.roomType}</td>
+                <td className="py-3 px-5 text-gray-700">{room.roomType}</td>
                 <td className="py-3 px-5 text-gray-700 max-sm:hidden">
-                  {item.amenities.join(', ')}
+                  {room.amenities.join(', ')}
                 </td>
-                <td className="py-3 px-5 text-gray-700">₹{item.pricePerNight}</td>
+                <td className="py-3 px-5 text-gray-700">₹{room.pricePerDay}</td>
                 <td className="py-3 px-5 text-center">
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       className="sr-only peer"
-                      checked={item.isAvailable}
-                      readOnly // avoids React warning for controlled component
+                      checked={room.isAvailable}
+                      onChange={() => toggleAvailability(room._id)}
                     />
-                    <div className="w-12 h-7 bg-gray-300 rounded-full peer-checked:bg-blue-600 transition-colors duration-300"></div>
-                    <span className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 ease-in-out peer-checked:translate-x-5"></span>
+                    <div className="w-12 h-7 bg-gray-300 rounded-full peer-checked:bg-green-500 transition-colors duration-300" />
+                    <span className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 ease-in-out peer-checked:translate-x-5" />
                   </label>
                 </td>
               </tr>

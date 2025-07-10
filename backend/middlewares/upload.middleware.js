@@ -1,5 +1,12 @@
+// upload.middleware.js
 import multer from "multer";
 
-const upload =multer({storage: multer.diskStorage({})})
+// Store files in memory (RAM)
+const storage = multer.memoryStorage();
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Limit: 5MB per file
+});
 
 export default upload;

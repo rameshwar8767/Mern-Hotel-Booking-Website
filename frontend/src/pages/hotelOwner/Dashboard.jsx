@@ -1,9 +1,42 @@
 import React, { useState } from 'react'
 import Title from '../../components/Title'
-import { assets, dashboardDummyData } from '../../assets/assets'
+import { assets} from '../../assets/assets'
+import { useAppContext } from '../../context/AppContext'
+import { useEffect } from 'react'
 
 const Dashboard = () => {
-  const [dashboardData, setDashboardData] = useState(dashboardDummyData)
+
+  const {currency,user,getToken,toast,axios,} = useAppContext()
+
+  const [dashboardData, setDashboardData] = useState({
+    bookings:[],
+    totalBookings:0,
+    totalRevenue:0,
+  })
+
+  const fetchDashboardData = async () => {
+    try {
+      const { data } = await axios.get('/api/bookings/owner',{headers: {
+        Authorization: `Bearer ${await getToken()}`
+      }})
+      if (data.success) {
+        setDashboardData(data.dashboardData);
+        toast.success(data.message || "Dashboard data loaded successfully");
+      } else {
+        toast.error(data.message || "Failed to load dashboard data");
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      toast.error("Failed to load dashboard data");
+      
+    }
+  }
+
+  useEffect(()=>{
+    if(user){
+      fetchDashboardData();
+    }
+  },[user])
 
   return (
     <div className="animate-fadeIn transition-all duration-300 ease-in-out">

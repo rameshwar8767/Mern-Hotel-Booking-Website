@@ -28,7 +28,9 @@ const HotelCard = ({ room, index }) => {
 
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-playfair text-xl font-semibold text-gray-800">{room.hotel.name}</h3>
+          <h3 className="font-playfair text-xl font-semibold text-gray-800">
+            {room.hotel.name}
+          </h3>
           <div className="flex items-center gap-1 text-sm text-yellow-500">
             <img src={assets.starIconFilled} alt="star" className="h-4" />
             4.5
@@ -42,7 +44,8 @@ const HotelCard = ({ room, index }) => {
 
         <div className="flex items-center justify-between mt-3">
           <span className="text-lg font-semibold text-gray-800">
-            ₹{room.pricePerNight} <span className="text-sm font-normal text-gray-500">/ day</span>
+            ₹{room.pricePerDay}{' '}
+            <span className="text-sm font-normal text-gray-500">/ day</span>
           </span>
           <button className="px-4 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-100 transition duration-300">
             Book Now

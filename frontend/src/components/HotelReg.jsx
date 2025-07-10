@@ -1,18 +1,33 @@
 import React, { useState } from 'react'
 import { assets, cities } from '../assets/assets'
 import { useAppContext } from '../context/AppContext'
+import toast from 'react-hot-toast'
 
 const HotelReg = () => {
 
-    const {setShowHotelRegister,axios} = useAppContext()
+    const {setShowHotelRegister,axios,getToken,setIsOwner} = useAppContext()
 
     const [name,setName] = useState("")
     const [contact,setContact] = useState("")
     const [address,setAddress] = useState("")
     const [city,setCity] = useState("")
 
-    const onSubmitHandler = async (e)=>{
-        e.preventDefault();
+    const onSubmitHandler = async (event)=>{
+        try {
+            event.preventDefault();
+            const {data} = await axios.post(`/api/hotels/`,{
+                name,contact,address,city
+            },{headers: {Authorization: `Bearer ${await getToken()}`}})
+            if(data.success){
+                toast.success(data.message || "Hotel registered successfully");
+                setShowHotelRegister(false);
+                setIsOwner(true);
+            }else{
+                toast.error(data.message || "Something went wrong while registering hotel");
+            }
+        } catch (error) {
+            toast.error(error.message || "Something went wrong while registering hotel");
+        }
     }
         
 
@@ -29,14 +44,14 @@ const HotelReg = () => {
                 <label htmlFor="name" className='font-medium text-gray-500'>
                     Hotel Name
                 </label> 
-                <input onChange={(e)=> setName(e.target.value)} id='name' type="text"  placeholder='Type here' className='border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light' required/>
+                <input onChange={(e)=> setName(e.target.value)} id='name' type="text" value={name} placeholder='Type here' className='border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light' required/>
             </div>
             {/* Phone */}
             <div className='w-full mt-4'>
                 <label htmlFor="contact" className='font-medium text-gray-500'>
                     Phone
                 </label> 
-                <input onChange={(e)=> setContact(e.target.value)} id='contact' type="text"  placeholder='Type here' className='border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light' required/>
+                <input onChange={(e)=> setContact(e.target.value)} id='contact' type="text" value={contact} placeholder='Type here' className='border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light' required/>
             </div>
 
             {/* Address */}
@@ -44,7 +59,7 @@ const HotelReg = () => {
                 <label htmlFor="contact" className='font-medium text-gray-500'>
                     Address
                 </label> 
-                <input onChange={(e)=> setAddress(e.target.value)} id='address' type="text"  placeholder='Type here' className='border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light' required/>
+                <input onChange={(e)=> setAddress(e.target.value)} value={address} id='address' type="text"  placeholder='Type here' className='border border-gray-200 rounded w-full px-3 py-2.5 mt-1 outline-indigo-500 font-light' required/>
             </div>
             {/* Select City Drop Down */}
             <div className='w-full mt-4 max-w-60 mr-auto'>
