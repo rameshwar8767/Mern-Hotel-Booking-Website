@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@clerk/clerk-sdk-node": "^4.13.23",
     "@clerk/express": "^1.7.2",
     "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
@@ -19,6 +20,7 @@
     "express": "^5.1.0",
     "mongoose": "^8.16.1",
     "multer": "^2.0.1",
+    "nodemailer": "^7.0.5",
     "svix": "^1.68.0"
   },
   "devDependencies": {

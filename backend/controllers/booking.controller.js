@@ -1,6 +1,7 @@
 import Booking from "../models/booking.model.js"
 import Room from "../models/room.model.js";
 import Hotel from "../models/hotel.model.js"
+import { transporter } from "../configs/nodemailer.js";
 
 
 // Function to Check Availability Of Room
@@ -66,6 +67,28 @@ export const addBooking = async(req,res)=>{
             checkOutDate,
             totalPrice,
         })
+        const mailOptions ={
+            from: process.env.SENDER_EMAIL,
+            to: req.user.email,
+            subject: "Hotel Booking Details",
+            html:`
+               <h2>Your Booking Details</h2>
+               <p> Dear ${req.user.username},</p>
+               <p>Thank you for booking with us! Here are your booking details:</p>
+               <ul>
+                <li><strong>Booking ID:</strong> ${booking._id}</li>
+                <li><strong>Hotel Name:</strong> ${roomData.hotel.name}</li>
+                <li><strong>Location:</strong> ${roomData.hotel.address}</li>
+                <li><strong>Room Type:</strong> ${roomData.roomType}</li>
+                <li><strong>Check-In Date:</strong> ${new Date(booking.checkInDate).toDateString()}</li>
+                <li><strong>Check-Out Date:</strong> ${new Date(booking.checkOutDate).toDateString()}</li>
+                <li><strong>Total Price:</strong> ₹${booking.totalPrice} /day</li>
+               </ul>
+               <p>We look forward to welcoming you!</p>
+               <p>if you have any questions or need assistance, feel free to contact us.</p>
+            `
+        }
+        await transporter.sendMail(mailOptions)
         res.json({success:true, message:"Add Booking Successfully"})
     } catch (error) {
         console.log(error)

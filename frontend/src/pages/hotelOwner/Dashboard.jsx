@@ -15,22 +15,42 @@ const Dashboard = () => {
   })
 
   const fetchDashboardData = async () => {
-    try {
-      const { data } = await axios.get('/api/bookings/owner',{headers: {
-        Authorization: `Bearer ${await getToken()}`
-      }})
-      if (data.success) {
-        setDashboardData(data.dashboardData);
-        toast.success(data.message || "Dashboard data loaded successfully");
-      } else {
-        toast.error(data.message || "Failed to load dashboard data");
-      }
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      toast.error("Failed to load dashboard data");
-      
+  try {
+    const token = await getToken();
+
+    const response = await axios.get('/api/bookings/owner', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Check if response has a 'data' object
+    if (!response || !response.data) {
+      toast.error("Unexpected server response");
+      return;
     }
+
+    const { success, message, dashboardData } = response.data;
+
+    if (success) {
+      setDashboardData(dashboardData);
+      toast.success(message || "Dashboard data loaded successfully");
+    } else {
+      toast.error(message || "Failed to load dashboard data");
+    }
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+
+    // Optional chaining to avoid reading 'error' of undefined
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Something went wrong";
+
+    toast.error(message);
   }
+};
+
 
   useEffect(()=>{
     if(user){
