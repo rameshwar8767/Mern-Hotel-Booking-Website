@@ -24,16 +24,15 @@ const Dashboard = () => {
       },
     });
 
-    // Check if response has a 'data' object
     if (!response || !response.data) {
       toast.error("Unexpected server response");
       return;
     }
 
-    const { success, message, dashboardData } = response.data;
+    const { success, message, data } = response.data;
 
-    if (success) {
-      setDashboardData(dashboardData);
+    if (success && data) {
+      setDashboardData(data);
       toast.success(message || "Dashboard data loaded successfully");
     } else {
       toast.error(message || "Failed to load dashboard data");
@@ -41,7 +40,6 @@ const Dashboard = () => {
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
 
-    // Optional chaining to avoid reading 'error' of undefined
     const message =
       error?.response?.data?.message ||
       error?.message ||
@@ -50,6 +48,7 @@ const Dashboard = () => {
     toast.error(message);
   }
 };
+
 
 
   useEffect(()=>{

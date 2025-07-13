@@ -83,7 +83,7 @@ export const addBooking = async(req,res)=>{
                 <li><strong>Room Type:</strong> ${roomData.roomType}</li>
                 <li><strong>Check-In Date:</strong> ${new Date(booking.checkInDate).toDateString()}</li>
                 <li><strong>Check-Out Date:</strong> ${new Date(booking.checkOutDate).toDateString()}</li>
-                <li><strong>Total Price:</strong> ₹${booking.totalPrice} /day</li>
+                <li><strong>Total Price:</strong> ₹${booking.totalPrice} </li>
                </ul>
                <p>We look forward to welcoming you!</p>
                <p>if you have any questions or need assistance, feel free to contact us.</p>
@@ -113,24 +113,42 @@ export const getUserBookings = async (req,res)=>{
     }
 }
 
-export const getHotelBookings = async(req,res)=>{
-    try {
-        const hotel = await Hotel.findOne({owner: req.auth.userId})
-        if(!hotel) return res.json({success:false, message:"No Hotel Found"})
+export const getHotelBookings = async (req, res) => {
+  try {
+    const hotel = await Hotel.findOne({ owner: req.auth.userId });
 
-        const bookings = await Booking.find({hotel: hotel._id}).populate("room hotel user").sort({createdAt: -1})
-
-        //Total Bookings
-        const totalBookings = bookings.length;
-        // total revenue
-        const totalRevenue = bookings.reduce((acc,booking)=> acc + booking.totalPrice, 0)
-
-        res.json({success: true, dashboardData : {totalBookings,totalRevenue,bookings}})
-
-    } catch (error) {
-        res.json({success:false, message:"Failed to fetch bookings"})
+    if (!hotel) {
+      return res.json({ success: false, message: "No Hotel Found" });
     }
-}
+
+    const bookings = await Booking.find({ hotel: hotel._id })
+      .populate("room hotel user")
+      .sort({ createdAt: -1 });
+
+    const totalBookings = bookings.length;
+
+    const totalRevenue = bookings.reduce((acc, booking) => {
+      return booking.isPaid ? acc + booking.totalPrice : acc;
+    }, 0);
+
+    res.status(200).json({
+      success: true,
+      message: "Dashboard data loaded successfully",
+      data: {
+        bookings,
+        totalBookings,
+        totalRevenue,
+      },
+    });
+  } catch (error) {
+    console.error("Error in getHotelBookings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch bookings",
+    });
+  }
+};
+
 // controllers/booking.controller.js
 
 
@@ -191,51 +209,6 @@ export const verifyPayment = async (req, res) => {
   }
 };
 
-// export const razorPayPayment = async (req,res)=>{
-//     try {
-//       const {bookingId} = req.body;
-//       const booking = await Booking.findById(bookingId);
-//       if(!booking) return res.json({success:false, message:"Booking not found"})
-//       const roomData = await Room.findById(booking.room).populate("hotel");
-//       if(!roomData) return res.json({success:false, message:"Room not found"})
-//       const totalPrice = booking.totalPrice;
-//     const {origin} = req.headers;
-//     const razorpayInstance = new RazorPay({
-//       key_id: process.env.RAZORPAY_KEY_ID,
-//       key_secret: process.env.RAZORPAY_KEY_SECRET,
-//     });
-
-//     const line_items= [
-//       {
-//         price_data:{
-//           currency:"INR",
-//           product_data:{
-//             name: roomData.hotel.name,
-//           },
-//           unit_amount: totalPrice * 100, // Convert to paise
-//         },
-//         quantity: 1,
-//       }
-//     ]
-
-//     // const session = await razorpayInstance.orders.create({})
-//     const session = await razorpayInstance.orders.create({
-//       line_items,
-//       mode: "payment",
-//       success_url: `${origin}/loader/my-bookings`,
-//       cancel_url: `${origin}/my-bookings`,
-//       metadata: {
-//         bookingId,
-//       },
-//     });
-//     if(!session) return res.json({success:false, message:"Failed to create payment session"})
-
-//       res.json({success:true, url: session.url})
-
-//     } catch (error) {
-//       res.json({success:false, message: "Payment failed"})
-//     }
-// }
 
 
 
@@ -285,69 +258,5 @@ export const razorPayPayment = async (req, res) => {
 };
 
 
-
-// Function to handle Razorpay webhook
-// export const razorpayWebhook = async (req, res) => {
-//   // Razorpay validates raw body, so make sure you use `express.raw()` middleware for this route
-//   const signature = req.headers["x-razorpay-signature"];
-
-//   const expectedSignature = crypto
-//     .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET)
-//     .update(req.rawBody) // ✅ req.rawBody (not req.body)
-//     .digest("hex");
-
-//   if (signature !== expectedSignature) {
-//     return res.status(400).json({ success: false, message: "Invalid signature" });
-//   }
-
-//   try {
-//     const event = req.body.event;
-//     const payment = req.body.payload?.payment?.entity;
-
-//     if (event === "payment.captured") {
-//       const bookingId = payment.notes?.bookingId;
-
-//       if (!bookingId) {
-//         return res.status(400).json({ success: false, message: "Missing bookingId in notes" });
-//       }
-
-//       // ✅ Update booking status
-//       const booking = await Booking.findByIdAndUpdate(
-//         bookingId,
-//         { isPaid: true },
-//         { new: true }
-//       ).populate("room hotel user");
-
-//       if (!booking) {
-//         return res.status(404).json({ success: false, message: "Booking not found" });
-//       }
-
-//       // ✅ Send confirmation email
-//       await transporter.sendMail({
-//         from: process.env.SENDER_EMAIL,
-//         to: booking.user.email,
-//         subject: "Payment Successful",
-//         html: `
-//           <h2>Payment Received</h2>
-//           <p>Your payment for booking <strong>${booking._id}</strong> has been successfully captured.</p>
-//           <p>Hotel: <strong>${booking.hotel.name}</strong></p>
-//           <p>Room Type: ${booking.room.roomType}</p>
-//           <p>Check-In: ${new Date(booking.checkInDate).toDateString()}</p>
-//           <p>Check-Out: ${new Date(booking.checkOutDate).toDateString()}</p>
-//           <p>Total Paid: ₹${booking.totalPrice}</p>
-//         `
-//       });
-
-//       console.log(`✅ Booking ${booking._id} marked as paid`);
-//     } else {
-//       console.log(`Unhandled Razorpay event type: ${event}`);
-//     }
-
-//     return res.status(200).json({ success: true, message: "Webhook processed successfully" });
-//   } catch (error) {
-//     console.error("❌ Razorpay Webhook Error:", error.message);
-//     return res.status(500).json({ success: false, message: "Internal server error" });
-//   }
-// };
 
 

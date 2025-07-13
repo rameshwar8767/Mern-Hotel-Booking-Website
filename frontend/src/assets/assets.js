@@ -37,11 +37,13 @@ import listIcon from "./listIcon.svg";
 import uploadArea from "./uploadArea.svg";
 import totalBookingIcon from "./totalBookingIcon.svg";
 import totalRevenueIcon from "./totalRevenueIcon.svg";
+import aboutHeroImage from "./aboutHeroImage.jpg";
 
 
 export const assets = {
     logo,
     searchIcon,
+    aboutHeroImage,
     userIcon,
     calenderIcon,
     locationIcon,
@@ -75,11 +77,18 @@ export const assets = {
 }
 
 export const cities = [
-    "Dubai",
-    "Singapore",
-    "New York",
-    "London",
+  "Mumbai",
+  "Delhi",
+  "Bengaluru",
+  "Chennai",
+  "Hyderabad",
+  "Kolkata",
+  "Pune",
+  "Ahmedabad",
+  "Jaipur",
+  "Lucknow",
 ];
+
 
 // Exclusive Offers Dummy Data
 export const exclusiveOffers = [
