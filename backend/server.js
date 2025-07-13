@@ -4,12 +4,11 @@ import cors from "cors";
 import connectDB from "./configs/db.js";
 import { clerkMiddleware } from "@clerk/express";
 import connectCloudinary from "./configs/cloudinary.js";
-
-import clerkWebhooks from "./controllers/clerkWebhooks.js";
 import userRouter from "./routes/user.route.js";
 import hotelRouter from "./routes/hotel.route.js";
 import roomRouter from "./routes/room.route.js";
 import bookingRouter from "./routes/booking.route.js";
+
 
 // ✅ Load .env first
 dotenv.config();
@@ -31,6 +30,8 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(clerkMiddleware());
+
+
 
 // ✅ API Routes
 app.get("/", (req, res) => {
