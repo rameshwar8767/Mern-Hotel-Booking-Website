@@ -38,6 +38,7 @@ import uploadArea from "./uploadArea.svg";
 import totalBookingIcon from "./totalBookingIcon.svg";
 import totalRevenueIcon from "./totalRevenueIcon.svg";
 import aboutHeroImage from "./aboutHeroImage.jpg";
+import heroImage1 from "./heroImage.jpg"
 
 
 export const assets = {
@@ -74,6 +75,7 @@ export const assets = {
     uploadArea,
     totalBookingIcon,
     totalRevenueIcon,
+    heroImage1
 }
 
 export const cities = [
